@@ -141,7 +141,7 @@ public class Inventory : MonoBehaviour, ISaveManager
 
     public void AddItem(ItemData _item, int stackSize = 1)
     {
-        Debug.Log($"added {_item.itemName} to inventory");
+        GameManager.instance.Log($"added {_item.itemName} to inventory");
         if (CanAddItem())
             AddToInventory(_item, stackSize);
         //else if (_item.itemType == ItemType.Note)
@@ -169,7 +169,7 @@ public class Inventory : MonoBehaviour, ISaveManager
         if (inventoryDictianory.TryGetValue(_item, out InventoryItem value))
         {
             value.AddStack();
-            Debug.Log($"This item {_item.itemName} was already in the inventory dictionary");
+            GameManager.instance.Log($"This item {_item.itemName} was already in the inventory dictionary");
         }
         else
         {
@@ -177,7 +177,7 @@ public class Inventory : MonoBehaviour, ISaveManager
             newItem.stackSize = stackSize;
             inventory.Add(newItem);
             inventoryDictianory.Add(_item, newItem);
-            Debug.Log($"This item {_item.itemName} was just added to the inventory dictionary");
+            GameManager.instance.Log($"This item {_item.itemName} was just added to the inventory dictionary");
         }
     }
 
@@ -185,6 +185,7 @@ public class Inventory : MonoBehaviour, ISaveManager
     {
         if (inventoryDictianory.TryGetValue(_item, out InventoryItem value))
         {
+            GameManager.instance.Log($"This item {_item.itemName} was just removed from the inventory dictionary");
             if (value.stackSize <= 1 && !all)
             {
                 inventory.Remove(value);
