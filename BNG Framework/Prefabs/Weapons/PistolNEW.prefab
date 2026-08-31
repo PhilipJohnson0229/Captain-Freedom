@@ -580,7 +580,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &987158129682462871
 Transform:
   m_ObjectHideFlags: 0
@@ -1163,7 +1163,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &8835154973135514447
 Transform:
   m_ObjectHideFlags: 0
@@ -1174,7 +1174,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.01980105, z: -0.07921487}
-  m_LocalScale: {x: 4, y: 3, z: 3}
+  m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6024261394720629044}
@@ -2358,7 +2358,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2317642720577101209
 Transform:
   m_ObjectHideFlags: 0
@@ -2652,7 +2652,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.01980105, z: -0.07921487}
-  m_LocalScale: {x: 4, y: 3, z: 3}
+  m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6024261394720629044}
@@ -3346,6 +3346,7 @@ GameObject:
   - component: {fileID: 260408578}
   - component: {fileID: 260408579}
   - component: {fileID: 141909561}
+  - component: {fileID: 7575165200212994640}
   m_Layer: 10
   m_Name: PistolNEW
   m_TagString: Untagged
@@ -3608,7 +3609,7 @@ MonoBehaviour:
   InternalAmmo: 0
   MaxInternalAmmo: 10
   AutoChamberRounds: 1
-  MustChamberRounds: 1
+  MustChamberRounds: 0
   AlwaysFireProjectile: 0
   FireProjectileInSlowMo: 1
   SlowMoRateOfFire: 0.3
@@ -3922,6 +3923,24 @@ MonoBehaviour:
   onSnapZoneExit:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &7575165200212994640
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6024261396410624980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d39e5f59220e9224782275173572d05b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EquipmentItem
+  <activated>k__BackingField: 0
+  <eId>k__BackingField: 8c6381c7-176d-4a1d-a450-a93fcccb2cd9
+  <itemData>k__BackingField: {fileID: 11400000, guid: 1e0079d61e2d19a43b7f8acf001131f4,
+    type: 2}
+  actions: []
+  equipmentType: 0
 --- !u!1 &6638139941897956705
 GameObject:
   m_ObjectHideFlags: 0
@@ -3939,7 +3958,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &7777922250626372962
 Transform:
   m_ObjectHideFlags: 0

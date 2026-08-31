@@ -131,14 +131,16 @@ namespace BNG {
 
         public void UpdateSlot(InventoryItem _newItem)
         {
+            Debug.Log($"Trying to update this slot with id {sId}");
             item = _newItem;
 
             //itemImage.color = Color.white;
 
-            if (item != null)
+            if (item.data.snapZoneId == sId)
             {
                 Debug.Log(item.data.itemName);
-                HeldItem = item.data.itemPrefab;
+                Grabbable itemToLoad = Instantiate(item.data.itemPrefab, transform.position, Quaternion.identity);
+                GameManager.instance.Log($"We have a match for this snapzone id and were trying to load {_newItem.data.itemName}.");
                 /*itemImage.sprite = item.data.itemIcon;
 
                 if (item.data.itemType == ItemType.Note)

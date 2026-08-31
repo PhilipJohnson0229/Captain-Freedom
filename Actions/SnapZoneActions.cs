@@ -16,14 +16,14 @@ public class SnapZoneActions : GrabbableEvents
     {
         GameManager.instance.Log($"Trying to add an item to the inventory");
 
-        AddToInventory();
+        //AddToInventory();
     }
 
     public override void OnSnapZoneExit()
     {
         GameManager.instance.Log($"Trying to remove an item to the inventory");
 
-        RemoveFromInventory();
+        //RemoveFromInventory();
     }
 
     public void AddToInventory()
@@ -39,7 +39,7 @@ public class SnapZoneActions : GrabbableEvents
         {
             GameManager.instance.Log($"Trying to add {value.itemData.itemName} to the inventory");
             currentItem = value.itemData;
-            Inventory.instance.AddItem(currentItem);
+            //Inventory.instance.AddItem(currentItem);
         }
 
         //AudioManager.instance.PlaySFX(0, null);
@@ -51,7 +51,7 @@ public class SnapZoneActions : GrabbableEvents
     {
         GameManager.instance.Log("Trying to remove this item");
         //AudioManager.instance.PlaySFX(0, null);
-        Inventory.instance.RemoveItem(currentItem, false);
+        //Inventory.instance.RemoveItem(currentItem, false);
         //Extensions.RunActions(takeActions);
     }
 }

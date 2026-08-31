@@ -96,11 +96,11 @@ public class GameManager : MonoBehaviour, ISaveManager
                 value.checkpointsInitialAnimations.Add(checkpoint.id, checkpoint.initialAnimationPlayed);
             }
 
-            value.equipmentItemsInScene.Clear();
+            value.pickupsInScene.Clear();
 
             foreach (EquipmentItem g in sceneItems)
             {
-                value.equipmentItemsInScene.Add(g.eId, g.activated);
+                //value.equipmentItemsInScene.Add(g.eId, g.activated);
             }
         }
         else
@@ -126,7 +126,7 @@ public class GameManager : MonoBehaviour, ISaveManager
 
             foreach (EquipmentItem g in sceneItems)
             {
-                gameScene.equipmentItemsInScene.Add(g.eId, g.activated);
+                gameScene.pickupsInScene.Add(g.eId, g.activated);
             }
 
             _data.scenes.Add(activeScene, gameScene);
@@ -238,5 +238,6 @@ public class GameManager : MonoBehaviour, ISaveManager
     public void Log(string logText)
     {
         log.text = logText;
+        Debug.Log(logText);
     }
 }

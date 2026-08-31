@@ -105,11 +105,12 @@ public class Inventory : MonoBehaviour, ISaveManager
 
     public void UpdateSlotUI()
     {
+        Debug.Log("Trying to update slot UI");
         for (int i = 0; i < equipmentSlot.Length; i++)
         {
-            foreach (KeyValuePair<ItemData_Equipment, InventoryItem> item in equipmentDictionary)
+            foreach (KeyValuePair<ItemData, InventoryItem> item in inventoryDictianory)
             {
-                if (item.Key.equipmentType == equipmentSlot[i].equipmentType)
+                if (item.Key.snapZoneId == equipmentSlot[i].sId)
                     equipmentSlot[i].UpdateSlot(item.Value);
             }
         }
@@ -183,6 +184,9 @@ public class Inventory : MonoBehaviour, ISaveManager
 
     public void RemoveItem(ItemData _item, bool all)
     {
+        if (_item == null)
+            return;
+
         if (inventoryDictianory.TryGetValue(_item, out InventoryItem value))
         {
             GameManager.instance.Log($"This item {_item.itemName} was just removed from the inventory dictionary");
@@ -391,31 +395,33 @@ public class Inventory : MonoBehaviour, ISaveManager
 
     public void LoadData(GameData _data)
     {
-        foreach (KeyValuePair<string, int> pair in _data.inventory)
-        {
-            foreach (var item in itemDataBase)
-            {
-                if (item != null && item.itemId == pair.Key)
-                {
-                    InventoryItem itemToLoad = new InventoryItem(item);
-                    itemToLoad.stackSize = pair.Value;
-                    loadedItems.Add(itemToLoad);
-                }
-            }
-        }
+        ////we read from the save file to get starting items
+        //foreach (KeyValuePair<string, InventoryItemDetails> pair in _data.inventory)
+        //{
+        //    foreach (var item in itemDataBase)
+        //    {
+        //        if (item != null && item.itemId == pair.Key)
+        //        {
+        //            InventoryItem itemToLoad = new InventoryItem(item);
+        //            itemToLoad.stackSize = pair.Value.stackSize;
+        //            itemToLoad.data.setSnapZoneId(pair.Value.snapParentId);
+        //            loadedItems.Add(itemToLoad);
+        //        }
+        //    }
+        //}
 
-        foreach (KeyValuePair<string, int> pair in _data.equipment)
-        {
-            foreach (var item in itemDataBase)
-            {
-                if (item != null && item.itemId == pair.Key)
-                {
-                    ItemData_Equipment equipment = item as ItemData_Equipment;
-                    equipment.stackSize = pair.Value;
-                    loadedEquipment.Add(equipment);
-                }
-            }
-        }
+        //foreach (KeyValuePair<string, int> pair in _data.equipment)
+        //{
+        //    foreach (var item in itemDataBase)
+        //    {
+        //        if (item != null && item.itemId == pair.Key)
+        //        {
+        //            ItemData_Equipment equipment = item as ItemData_Equipment;
+        //            equipment.stackSize = pair.Value;
+        //            loadedEquipment.Add(equipment);
+        //        }
+        //    }
+        //}
 
 
 
@@ -435,34 +441,47 @@ public class Inventory : MonoBehaviour, ISaveManager
 
     public void SaveData(GameData _data)
     {
-        _data.inventory.Clear();
-        _data.equipment.Clear();
+        //_data.inventory.Clear();
+        //_data.equipment.Clear();
 
-        foreach (KeyValuePair<ItemData, InventoryItem> pair in inventoryDictianory)
-        {
-            _data.inventory.Add(pair.Key.itemId, pair.Value.stackSize);
-        }
+        //foreach (KeyValuePair<ItemData, InventoryItem> pair in inventoryDictianory)
+        //{
+        //    InventoryItemDetails newDetails = new InventoryItemDetails();
+        //    newDetails.stackSize = pair.Value.stackSize;
+        //    foreach (SnapZone slot in equipmentSlot)
+        //    {
+        //        if (slot.HeldItem && slot.HeldItem.TryGetComponent(out EquipmentItem component))
+        //        {
+        //            if(component.itemData.itemId == pair.Key.itemId)
+        //            {
+        //                newDetails.snapParentId = slot.sId;
+        //            }
+        //            //slot.HeldItem.GetComponent<EquipmentItem>().itemData.setSnapZoneId(slot.sId);
+        //        }
+        //    }
+        //    _data.inventory.Add(pair.Key.itemId, newDetails);
+        //}
 
-        foreach (KeyValuePair<ItemData, InventoryItem> pair in notesDictionary)
-        {
-            _data.inventory.Add(pair.Key.itemId, pair.Value.stackSize);
-        }
+        //foreach (KeyValuePair<ItemData, InventoryItem> pair in notesDictionary)
+        //{
+        //    _data.inventory.Add(pair.Key.itemId, pair.Value.stackSize);
+        //}
 
-        foreach (KeyValuePair<ItemData_Equipment, InventoryItem> pair in equipmentDictionary)
-        {
-            _data.equipment.Add(pair.Key.itemId, pair.Value.stackSize);
-        }
+        //foreach (KeyValuePair<ItemData_Equipment, InventoryItem> pair in equipmentDictionary)
+        //{
+        //    _data.equipment.Add(pair.Key.itemId, pair.Value.stackSize);
+        //}
 
-        _data.snapZoneIds.Clear();
+        //_data.snapZoneIds.Clear();
 
-        foreach (SnapZone slot in equipmentSlot)
-        {
-            _data.snapZoneIds.Add(slot.sId, slot.HeldItem ? slot.HeldItem.GetComponent<EquipmentItem>().itemData.itemId : "");
-            if (slot.HeldItem)
-            {
-                slot.HeldItem.GetComponent<EquipmentItem>().itemData.setSnapZoneId(slot.sId);
-            }
-        }
+        //foreach (SnapZone slot in equipmentSlot)
+        //{
+        //    _data.snapZoneIds.Add(slot.sId, slot.HeldItem ? slot.HeldItem.GetComponent<EquipmentItem>().itemData.itemId : "");
+        //    if (slot.HeldItem)
+        //    {
+        //        slot.HeldItem.GetComponent<EquipmentItem>().itemData.setSnapZoneId(slot.sId);
+        //    }
+        //}
 
     }
 
