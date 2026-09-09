@@ -18,12 +18,32 @@ public enum HandSide
     Right
 }
 
+public enum PowerGestureSlot
+{
+    None,
+
+    LeftUp,
+    LeftDown,
+    LeftSide,
+
+    RightUp,
+    RightDown,
+    RightSide
+}
+
 public class VRArmSwingGestureDetector : MonoBehaviour
 {
     [Header("Hand Setup")]
     [SerializeField] private HandSide handSide;
     [SerializeField] private Transform handTransform;
+    [SerializeField] private Transform bodyTransform;
     [SerializeField] private Transform playerHead;
+    [SerializeField] private float minRadialChange = 0.12f;
+    [SerializeField] private float minHorizontalSwingDistance = 0.15f;
+
+    [Header("Rotation Correction")]
+    [SerializeField] private bool flipSideGesturesOnNegativeYaw = true;
+    private Vector3 startOutwardDirection;
 
     [Header("Input")]
     [SerializeField] private bool useDebugGrabHeld;
@@ -36,6 +56,10 @@ public class VRArmSwingGestureDetector : MonoBehaviour
     [SerializeField] private float maxGestureTime = 0.9f;
     [SerializeField] private float gestureCooldown = 0.35f;
 
+    [Header("Power Loadout")]
+    [SerializeField] private PowerLoadoutManager powerLoadoutManager;
+
+
     [Header("Debug")]
     [SerializeField] private bool showDebugLogs = true;
 
@@ -45,6 +69,7 @@ public class VRArmSwingGestureDetector : MonoBehaviour
     private float cooldownTimer;
     private bool wasGrabHeld;
     private bool gestureAlreadyDetected;
+    private float startBodyDistance;
 
     private void Update()
     {
@@ -55,13 +80,6 @@ public class VRArmSwingGestureDetector : MonoBehaviour
 
         bool grabHeld = IsGrabHeld();
 
-        //if (grabHeld)
-        //{
-        //    ControllerHand controllerHand = handSide == HandSide.Right
-        //    ? ControllerHand.Right
-        //    : ControllerHand.Left;
-        //    GameManager.instance.Log($"Controller Hand: {controllerHand} Grab Activated");
-        //}
         if (grabHeld && !wasGrabHeld)
         {
             BeginGesture();
@@ -103,6 +121,8 @@ public class VRArmSwingGestureDetector : MonoBehaviour
         previousHandPosition = handTransform.position;
         gestureStartTime = Time.time;
         gestureAlreadyDetected = false;
+
+        startOutwardDirection = GetStartOutwardDirection();
 
         if (showDebugLogs)
             Debug.Log($"{handSide} gesture watch started.");
@@ -158,41 +178,89 @@ public class VRArmSwingGestureDetector : MonoBehaviour
         gestureAlreadyDetected = false;
     }
 
-    private ArmSwingGesture ClassifyGesture(Vector3 localDelta)
+    private Vector3 GetStartOutwardDirection()
     {
-        float absX = Mathf.Abs(localDelta.x);
-        float absY = Mathf.Abs(localDelta.y);
-        float absZ = Mathf.Abs(localDelta.z);
+        Vector3 bodyPosition = bodyTransform != null
+            ? bodyTransform.position
+            : transform.position;
 
-        bool xDominant = absX > absY * requiredDominance && absX > absZ * requiredDominance;
-        bool yDominant = absY > absX * requiredDominance && absY > absZ * requiredDominance;
-        bool zDominant = absZ > absX * requiredDominance && absZ > absY * requiredDominance;
+        Vector3 direction = gestureStartPosition - bodyPosition;
+        direction.y = 0f;
 
-        if (xDominant)
+        if (direction.sqrMagnitude < 0.0001f)
         {
-            bool movedRight = localDelta.x > 0f;
+            // Fallback if hand/body are weirdly aligned.
+            if (bodyTransform != null)
+            {
+                return handSide == HandSide.Right
+                    ? bodyTransform.right
+                    : -bodyTransform.right;
+            }
 
-            if (handSide == HandSide.Right)
-                return movedRight ? ArmSwingGesture.Outward : ArmSwingGesture.Inward;
-
-            return movedRight ? ArmSwingGesture.Inward : ArmSwingGesture.Outward;
+            return handSide == HandSide.Right
+                ? Vector3.right
+                : Vector3.left;
         }
 
-        if (yDominant)
+        return direction.normalized;
+    }
+
+    private ArmSwingGesture ClassifyGesture(Vector3 worldDelta)
+    {
+        float verticalAmount = worldDelta.y;
+        float absVertical = Mathf.Abs(verticalAmount);
+
+        Vector3 horizontalDelta = worldDelta;
+        horizontalDelta.y = 0f;
+
+        float horizontalDistance = horizontalDelta.magnitude;
+
+        // Up / down still use world Y because those are already working.
+        if (absVertical >= minSwingDistance &&
+            absVertical > horizontalDistance * requiredDominance)
         {
-            return localDelta.y > 0f
+            return verticalAmount > 0f
                 ? ArmSwingGesture.Upward
                 : ArmSwingGesture.Downward;
         }
 
-        if (zDominant)
+        if (horizontalDistance < minHorizontalSwingDistance)
+            return ArmSwingGesture.None;
+
+        Vector3 outwardAxis = GetOutwardAxisForHand();
+
+        float outwardAmount = Vector3.Dot(horizontalDelta.normalized, outwardAxis);
+
+        // Require the motion to be clearly along inward/outward axis.
+        if (Mathf.Abs(outwardAmount) < 0.55f)
+            return ArmSwingGesture.None;
+
+        return outwardAmount > 0f
+            ? ArmSwingGesture.Outward
+            : ArmSwingGesture.Inward;
+    }
+
+    private Vector3 GetOutwardAxisForHand()
+    {
+        Transform reference = bodyTransform != null ? bodyTransform : playerHead;
+
+        if (reference == null)
         {
-            return localDelta.z > 0f
-                ? ArmSwingGesture.Forward
-                : ArmSwingGesture.Backward;
+            return handSide == HandSide.Right ? Vector3.right : Vector3.left;
         }
 
-        return ArmSwingGesture.None;
+        // Use yaw only. Ignore pitch/roll.
+        Vector3 right = reference.right;
+        right.y = 0f;
+
+        if (right.sqrMagnitude < 0.0001f)
+            right = Vector3.right;
+
+        right.Normalize();
+
+        // Right hand outward is body right.
+        // Left hand outward is body left.
+        return handSide == HandSide.Right ? right : -right;
     }
 
     private Vector3 GetPlayerRelativeDelta(Vector3 worldDelta)
@@ -217,9 +285,81 @@ public class VRArmSwingGestureDetector : MonoBehaviour
 
     private void OnGestureDetected(ArmSwingGesture gesture)
     {
-        GameManager.instance.Log($"{handSide} hand gesture detected: {gesture}");
+        PowerGestureSlot gestureSlot = GetGestureSlot(gesture);
 
-        // Next step will be:
-        // powerLoadoutManager.TrySummon(gesture, handSide);
+        if (GameManager.instance != null)
+        {
+            GameManager.instance.Log($"{handSide} hand gesture detected: {gesture}. Gesture Slot Activated: {gestureSlot}");
+        }
+
+        if (gestureSlot == PowerGestureSlot.None)
+            return;
+
+        switch (gestureSlot)
+        {
+            case PowerGestureSlot.RightUp:
+                if (powerLoadoutManager != null)
+                {
+                    powerLoadoutManager.TrySummonGun(handSide);
+                }
+                else
+                {
+                    GameManager.instance.Log("No PowerLoadoutManager assigned.");
+                }
+                break;
+
+            case PowerGestureSlot.LeftUp:
+                if (powerLoadoutManager != null)
+                {
+                    powerLoadoutManager.TrySummonJet(handSide);
+                }
+                else
+                {
+                    GameManager.instance.Log("No PowerLoadoutManager assigned.");
+                }
+                break;
+
+            case PowerGestureSlot.LeftDown:
+                GameManager.instance.Log("LeftDown slot activated. No power assigned yet.");
+                break;
+
+            case PowerGestureSlot.LeftSide:
+                GameManager.instance.Log("LeftSide slot activated. No power assigned yet.");
+                break;
+
+            case PowerGestureSlot.RightDown:
+                GameManager.instance.Log("RightDown slot activated. No power assigned yet.");
+                break;
+
+            case PowerGestureSlot.RightSide:
+                GameManager.instance.Log("RightSide slot activated. No power assigned yet.");
+                break;
+        }
+    }
+
+    private PowerGestureSlot GetGestureSlot(ArmSwingGesture gesture)
+    {
+        switch (gesture)
+        {
+            case ArmSwingGesture.Upward:
+                return handSide == HandSide.Left
+                    ? PowerGestureSlot.LeftUp
+                    : PowerGestureSlot.RightUp;
+
+            case ArmSwingGesture.Downward:
+                return handSide == HandSide.Left
+                    ? PowerGestureSlot.LeftDown
+                    : PowerGestureSlot.RightDown;
+
+            case ArmSwingGesture.Inward:
+            case ArmSwingGesture.Outward:
+                return handSide == HandSide.Left
+                    ? PowerGestureSlot.LeftSide
+                    : PowerGestureSlot.RightSide;
+
+            default:
+                return PowerGestureSlot.None;
+        }
     }
 }
+

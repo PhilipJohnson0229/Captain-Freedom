@@ -3603,8 +3603,8 @@ MonoBehaviour:
   MaxRange: 25
   Damage: 25
   FiringMethod: 0
-  ReloadMethod: 0
-  FiringRate: 0.05
+  ReloadMethod: 2
+  FiringRate: 0.08
   BulletImpactForce: 1000
   InternalAmmo: 0
   MaxInternalAmmo: 10
